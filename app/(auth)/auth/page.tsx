@@ -12,8 +12,8 @@ const AuthPage = () => {
   };
   return (
     <div className="flex max-h-screen mt-7">
-      <div className="w-full max-w-3xl mx-auto flex flex-col lg:flex-row p-3">
-        <div>
+      <div className="w-full max-w-3xl mx-auto  p-3">
+       
           <div
             className="mb-8 lg:mb-12 cursor-pointer"
             onClick={() => router.push("/")}
@@ -49,7 +49,6 @@ const AuthPage = () => {
             </Button>
           </div>
         </div>
-      </div>
     </div>
   );
 };
