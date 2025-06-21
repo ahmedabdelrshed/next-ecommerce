@@ -1,8 +1,49 @@
+"use client";
+import { getCatalogWithProducts } from '@/actions/catalog/getCatalogWithProducts';
+import ProductCatalog from '@/components/ProductCatalog ';
 import { Button } from '@/components/ui/button';
+import { ICatalog } from '@/types/catalog';
 import { ArrowRight } from 'lucide-react';
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const HomePage = () => {
+  const [products, setProducts] = useState<ICatalog[]>([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const getData = async () => {
+      const catalogs = await getCatalogWithProducts();
+
+      
+
+      if (Array.isArray(catalogs)) {
+        const validCatalogs: ICatalog[] = catalogs
+          .filter(
+            (catalog) =>
+              catalog.catalogProducts &&
+              'items' in catalog.catalogProducts &&
+              Array.isArray(catalog.catalogProducts.items)
+          )
+          .map((catalog) => ({
+            ...catalog,
+            catalogProducts: {
+              ...catalog.catalogProducts,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              items: (catalog.catalogProducts ).items.map((item: any) => ({
+                ...item,
+                id: String(item.id),
+              })),
+            },
+          }));
+        setProducts(validCatalogs);
+      }
+
+      setIsLoading(false);
+    };
+
+    getData();
+  }, []);
   return (
     <div className="min-h-screen">
       <main className="container mx-auto px-4 py-8">
@@ -34,6 +75,19 @@ const HomePage = () => {
             </div>
           </div>
         </section>
+        {isLoading && (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-purple-900"></div>
+          </div>
+        )}
+
+        {products.map((catalog) => (
+          <ProductCatalog
+            key={catalog?.id}
+            title={catalog?.localizeInfos?.title as string}
+            products={catalog.catalogProducts.items}
+          />
+        ))}
       </main>
     </div>
   );
