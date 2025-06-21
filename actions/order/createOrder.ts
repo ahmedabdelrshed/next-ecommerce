@@ -23,25 +23,12 @@ export default async function createOrder(
     }
 
     try {
-        const orderData2: IOrderData = {
-            formIdentifier: "order_form",
-            paymentAccountIdentifier: "stripe_payment",
-            formData: { marker: "email", value: "ahmed7@gmail.com", type: "string" },
-            products: [
-                {
-                    productId: 1,
-                    quantity: 2,
-                    // any other required fields in IOrderProductData
-                }
-            ]
-        };
+       
           
         // Create a new order using the provided order data
-console.log(orderData)
         const createdOrder = await apiClient.Orders.setAccessToken(
             accessToken
-        ).createOrder('orders', orderData2);
-console.log('Created Order:', createdOrder);
+        ).createOrder('orders', orderData);
         if (!createdOrder?.id) {
             throw new Error('Order creation was unsuccessful.');
         }

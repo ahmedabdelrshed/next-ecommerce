@@ -83,7 +83,7 @@ export default function CartPage() {
       paymentAccountIdentifier: "stripe_payment",
 
       products: cartItems.map((item) => ({
-        productId: item.id,
+        productId: Number(item.id),
 
         quantity: item.quantity,
       })),
