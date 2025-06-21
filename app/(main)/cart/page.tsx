@@ -17,11 +17,11 @@ import {
 
 import { useRouter } from "next/navigation";
 
-
-
 import { IUserEntity } from "oneentry/dist/users/usersInterfaces";
 import useCartStore from "@/store/cartStore";
 import getUserData from "@/actions/auth/getUserData";
+import { IOrderData } from "oneentry/dist/orders/ordersInterfaces";
+import createOrder from "@/actions/order/createOrder";
 
 export default function CartPage() {
   const router = useRouter();
@@ -31,6 +31,8 @@ export default function CartPage() {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
 
   const removeItem = useCartStore((state) => state.removeItem);
+
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -48,7 +50,6 @@ export default function CartPage() {
         setIsLoading(true);
 
         const userData = await getUserData();
-
         if (userData) setUser(userData as IUserEntity);
 
         setIsLoading(false);
@@ -73,6 +74,27 @@ export default function CartPage() {
   const tax = subtotal * 0.1; // Assuming 10% tax
 
   const total = subtotal + tax;
+
+  const createOrderAndCheckout = async () => {
+    const data: IOrderData = {
+      formData: { marker: "email", value: user?.identifier, type: "string" },
+      formIdentifier: "order_form",
+
+      paymentAccountIdentifier: "stripe_payment",
+
+      products: cartItems.map((item) => ({
+        productId: item.id,
+
+        quantity: item.quantity,
+      })),
+    };
+
+    const url = await createOrder(data);
+
+    clearCart();
+
+    router.push(url);
+  };
 
   return (
     <div className="min-h-screen  p-4 sm:p-8">
@@ -192,6 +214,7 @@ export default function CartPage() {
                 <Button
                   className="w-full mt-6 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white font-semibold cursor-pointer"
                   disabled={!cartItems.length}
+                  onClick={createOrderAndCheckout}
                 >
                   <CreditCard className="mr-2 h-5 w-5" />
                   Proceed to Checkout
