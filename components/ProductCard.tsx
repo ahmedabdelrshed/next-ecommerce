@@ -8,11 +8,12 @@ import { Button } from "./ui/button";
 import { IProduct } from "@/types/product";
 import useCartStore from "@/store/cartStore";
 import { toast } from "sonner";
+import { IProductEntity } from "oneentry/dist/products/productsInterfaces";
 
-const ProductCard = ({ product }: { product: IProduct }) => {
+const ProductCard = ({ product }: { product: IProduct | IProductEntity}) => {
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const handleAddToCart = (product: IProduct) => {
+  const handleAddToCart = (product: IProduct | IProductEntity) => {
     addToCart({
       id: product.id,
 
