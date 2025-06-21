@@ -1,6 +1,6 @@
 
 export interface IProduct {
-    id: string;
+    id: number;
 
     localizeInfos: { title: string };
 
