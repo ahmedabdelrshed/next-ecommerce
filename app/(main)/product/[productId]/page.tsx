@@ -1,103 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import {  useEffect } from "react";
 
-import { useRouter } from "next/navigation";
 
 import { ShoppingCart, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-
-import { getProductDetails } from "@/actions/catalog/getProductDetails";
-
-
-import { getRelatedProducts } from "@/actions/catalog/getRelatedProducts";
-
-import { toast } from "sonner";
-import useCartStore from "@/store/cartStore";
 import ProductCatalog from "@/components/ProductCatalog ";
-import { IProductEntity } from "oneentry/dist/products/productsInterfaces";
+import useProduct from "@/hooks/useProduct";
 
 export default function ProductDetailPage({
   params: paramsPromise,
 }: {
   params: Promise<{ productId: string }>;
-}) {
-  const [productId, setProductId] = useState<string | null>(null);
+    }) {
+    const {handleAddToCart,isLoading,product,relatedProducts,router,setProductId} = useProduct();
+    useEffect(() => {
+      const unwrapParams = async () => {
+        const { productId } = await paramsPromise;
 
-  const [product, setProduct] = useState<IProductEntity>();
+        setProductId(productId);
+      };
 
-  const [relatedProducts, setRelatedProducts] = useState<IProductEntity[]>([]);
+      unwrapParams();
+    }, [paramsPromise, setProductId]);
 
-  const [isLoading, setIsLoading] = useState(true);
-
-  const router = useRouter();
-
-  const addToCart = useCartStore((state) => state.addToCart);
-
-  useEffect(() => {
-    const unwrapParams = async () => {
-      const { productId } = await paramsPromise;
-
-      setProductId(productId);
-    };
-
-    unwrapParams();
-  }, [paramsPromise]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!productId) return;
-
-      try {
-          const productData = await getProductDetails(parseInt(productId));
-          
-        if (!productData || (productData).id === undefined) {
-          throw new Error("Product not found");
-        }
-
-        setProduct(productData as IProductEntity);
-
-        const relatedProductsData = await getRelatedProducts(
-
-          parseInt((productData )?.productPages[0].pageId),
-
-          parseInt(productId)
-        );
-
-        setRelatedProducts(relatedProductsData);
-      } catch (error) {
-        console.error("Failed to fetch product details:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [productId]);
-
-  const handleAddToCart = () => {
-    if (product) {
-      addToCart({
-        id: product.id,
-
-        name: product.attributeValues.p_title.value || "Product",
-
-        price: product.attributeValues.p_price.value,
-
-        quantity: 1,
-
-        image: product.attributeValues.p_image.value.downloadLink,
-      });
-
-      toast("Added to Cart", {
-        description: `${product.attributeValues.p_title.value} has been added to your cart.`,
-
-        duration: 5000,
-      });
-    }
-  };
 
   if (isLoading) {
     return (
