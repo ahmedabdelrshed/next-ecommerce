@@ -1,148 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
 
 import { Package, DollarSign, Calendar } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
-
-
-import { IUserEntity } from "oneentry/dist/users/usersInterfaces";
-
-import { redirect } from "next/navigation";
-import getUserData from "@/actions/auth/getUserData";
-import { getOrders } from "@/actions/order/getOrders";
-
-interface UserStats {
-  lifetimeOrders: number;
-
-  lifetimeSpent: number;
-
-  yearlyOrders: number;
-
-  yearlySpent: number;
-
-  monthlyOrders: number;
-
-  monthlySpent: number;
-}
+import useProfile from "@/hooks/useProfile";
+import StatCard from "@/components/StatCard";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<IUserEntity | null>(null);
-
-  const [stats, setStats] = useState<UserStats>({
-    lifetimeOrders: 0,
-
-    lifetimeSpent: 0,
-
-    yearlyOrders: 0,
-
-    yearlySpent: 0,
-
-    monthlyOrders: 0,
-
-    monthlySpent: 0,
-  });
-
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const userData = await getUserData();
-
-      if (userData) setUser(userData as IUserEntity);
-
-      if (!userData) {
-        setUser(null);
-
-        setIsLoading(false);
-
-        redirect("/auth?type=login");
-      }
-
-      const orders = await getOrders();
-
-      if (orders) {
-        let lifetimeOrders = 0;
-
-        let lifetimeSpent = 0;
-
-        let yearlyOrders = 0;
-
-        let yearlySpent = 0;
-
-        let monthlyOrders = 0;
-
-        let monthlySpent = 0;
-
-        orders.items.forEach(
-          (order: {
-            createdDate: string | number | Date;
-
-            totalSum: string;
-          }) => {
-            const orderDate = new Date(order.createdDate);
-
-            const orderYear = orderDate.getFullYear();
-
-            const orderMonth = orderDate.getMonth() + 1;
-
-            const totalSum = parseFloat(order.totalSum);
-
-            const currentYear = new Date().getFullYear(); // Define current year here
-
-            const currentMonth = new Date().getMonth() + 1; // Define current month here
-
-            // Lifetime
-
-            lifetimeOrders += 1;
-
-            lifetimeSpent += totalSum;
-
-            // Yearly
-
-            if (orderYear === currentYear) {
-              yearlyOrders += 1;
-
-              yearlySpent += totalSum;
-            }
-
-            // Monthly
-
-            if (orderYear === currentYear && orderMonth === currentMonth) {
-              monthlyOrders += 1;
-
-              monthlySpent += totalSum;
-            }
-          }
-        );
-
-        setStats({
-          lifetimeOrders,
-
-          lifetimeSpent,
-
-          yearlyOrders,
-
-          yearlySpent,
-
-          monthlyOrders,
-
-          monthlySpent,
-        });
-      }
-    };
-
-    fetchData();
-  }, []);
-
+  const {isLoading,stats,user} = useProfile();
   return (
     <div className="  p-8">
       <div className="max-w-4xl mx-auto">
@@ -202,38 +68,6 @@ export default function ProfilePage() {
             </div>
           </>
         )}
-      </div>
-    </div>
-  );
-}
-
-function StatCard({
-  icon,
-
-  title,
-
-  value,
-
-  subvalue,
-}: {
-  icon: React.ReactNode;
-
-  title: string;
-
-  value: string | number;
-
-  subvalue?: string;
-}) {
-  return (
-    <div className="bg-gray-100 p-4 rounded-lg flex items-center space-x-4">
-      {icon}
-
-      <div>
-        <h4 className="text-sm font-medium text-gray-500">{title}</h4>
-
-        <p className="text-2xl font-bold text-purple-500">{value}</p>
-
-        {subvalue && <p className="text-sm text-gray-700">{subvalue}</p>}
       </div>
     </div>
   );
